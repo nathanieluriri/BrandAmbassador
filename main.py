@@ -22,6 +22,7 @@ messages=[
 @st.cache_data(persist="disk")
 def get_report(search_query):
     # Define the base URL (this should be the server or API endpoint you're hitting)
+    
     request_url =f"{BASE_URL}/getReportInstagram" 
     
     # Define the query parameter
@@ -30,22 +31,28 @@ def get_report(search_query):
     }
     
     # Perform the GET request
-    response = requests.get(request_url, params=params)
-    
-    # Check if the response is successful
-    if response.status_code == 200:
-        data = response.json()  # Parse the JSON response
-        st.session_state.summaries = data
-        for images in st.session_state.summaries:
-            if images.get("username")==None:
-                pass
-            else:
-                st.session_state.images.append(images.get("profilePic"))
-                st.session_state.userNames.append(images.get("username"))
+    try:
+        response = requests.get(request_url, params=params)
+        try:
+            if response.status_code == 200:
+                data = response.json()  # Parse the JSON response
+                st.session_state.summaries = data
+                for images in st.session_state.summaries:
+                    if images.get("username")==None:
+                        pass
+                    else:
+                        st.session_state.images.append(images.get("profilePic"))
+                        st.session_state.userNames.append(images.get("username"))
 
-    else:
-        st.session_state.images=[]
-        st.session_state.summaries=None
+            else:
+                st.session_state.images=[]
+                st.session_state.summaries=None
+        except UnboundLocalError:
+            pass
+    except requests.exceptions.ConnectionError:
+        
+        st.error("Cant Connect to API") 
+   
 
 
 
@@ -149,7 +156,7 @@ if st.button("Generate Search query"):
 st.text_input("what are you looking for ?",key="search_query",disabled=True)
 st.button("Search",on_click=search_func)
 if st.session_state.images:
-    print(st.session_state.userNames    )
+    print(st.session_state.userNames)
     tabs = st.tabs(st.session_state.userNames)
     for url,tab in enumerate(tabs):
          
@@ -179,37 +186,39 @@ if st.session_state.images:
                 pass
             else:
                 st.warning(f"something went wrong {e}")
-st.markdown("[tap me to Go to the Top](#brand-ambassador-finder)")
+                
+if st.session_state.userNames != None:
+    st.markdown("[tap me to Go to the Top](#brand-ambassador-finder)")
 
-st.markdown('''
-    <style>
-        /* Style for the back-to-top button */
-        .back-to-top {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #ffffff;
-            color: white;
-            border: none;
-            border-radius: 100%;
-            padding: 25px;
-            font-size: 20px;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 100;
-        }
+    st.markdown('''
+        <style>
+            /* Style for the back-to-top button */
+            .back-to-top {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background-color: #ffffff;
+                color: white;
+                border: none;
+                border-radius: 100%;
+                padding: 25px;
+                font-size: 20px;
+                cursor: pointer;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                z-index: 100;
+            }
 
-        .back-to-top:hover {
-            background-color: #499CD7;
-        }
+            .back-to-top:hover {
+                background-color: #499CD7;
+            }
 
-    </style>
+        </style>
 
-    <!-- Button that will scroll the page back to the top -->
-    <a href="#brand-ambassador-finder" class="back-to-top" id="back-to-top-button">
-        👆🏿
-    </a>
+        <!-- Button that will scroll the page back to the top -->
+        <a href="#brand-ambassador-finder" class="back-to-top" id="back-to-top-button">
+            👆🏿
+        </a>
 
-    <!-- Anchor at the top of the page to scroll to -->
-    <a name="top"></a>
-''', unsafe_allow_html=True)
+        <!-- Anchor at the top of the page to scroll to -->
+        <a name="top"></a>
+    ''', unsafe_allow_html=True)
